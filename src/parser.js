@@ -1,72 +1,72 @@
-const url = new URL(
-  'http://myurl.com?foo.bar=42&foo.baz=hello&bar.baz=true&baz=11',
-);
+const parser = (testUrl) => {
+  const url = new URL(testUrl);
 
-const parser = () => {
-  const params = [];
-  const objParams = {};
-  // console.log('URL', url.searchParams);
+  const params = {};
+
+  if(!validURL(url)){
+    throw new Error('Invalid URL')
+  }
 
   url.searchParams.forEach((value, name) => {
+    if (!value) {
+      return;
+    }
+
     const isDot = name.indexOf('.');
-    // console.log('isDot', isDot);
-    if (isDot===-1) {
-      // console.log('name', name);
-      // return params.push({ [name]: value });
-      return (params[name] = value);
+
+    if (isDot === -1) {
+      if (value[0] === '"' && value[value.length - 1] === '"') {
+        return (params[name] = String(value.replace(/['"]+/g, '')));
+      }
+
+      if (!isNaN(+value)) {
+        return (params[name] = Number(value));
+      }
+      if (value === 'true' || value === 'false') {
+        return (params[name] = Boolean(value));
+      }
+
+      return (params[name] = String(value));
     }
 
     const obj = name.split('.');
+
+    if (value[0] === '"' && value[value.length - 1] === '"') {
+      // console.log(1, String(value));
+      return (params[obj[0]] = {
+        ...params[obj[0]],
+        [obj[1]]: String(value.replace(/['"]+/g, '')),
+      });
+    }
+
+    if (!isNaN(+value)) {
+      // console.log(2, Number(value));
+      return (params[obj[0]] = { ...params[obj[0]], [obj[1]]: Number(value) });
+    }
+    if (value === 'true' || value === 'false') {
+      // console.log(Boolean(value), value);
+      // console.log(3, Boolean(value));
+      return (params[obj[0]] = { ...params[obj[0]], [obj[1]]: Boolean(value) });
+    }
+
     // console.log('obj', obj);
-    return (params[obj[0]] = { [obj[1]]: value, ...params[obj[0]] });
-
-    // return params.push({ [obj[0]]: { [obj[1]]: value } });
-
-    // params[name] = value;
-    params.push({ [name]: value });
+    return (params[obj[0]] = { ...params[obj[0]], [obj[1]]: value });
   });
-  console.log('Params', params);
 
-  // params.reverse().forEach(elem => console.log({ ...objParams, ...elem }));
-  // console.log(objParams)
+  // console.log('Params', params);
+  console.log(JSON.stringify(params));
+
+  return Object.keys(params)[0] ? params : null
 };
 
+function validURL(str) {
+  const pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  return !!pattern.test(str);
+}
+
 module.exports = parser;
-
-// const testUrl = 'http://myurl.com?foo.bar=42&foo.baz=hello&bar.baz=true&baz=11';
-
-// const parser = () => {
-//   // const obj = {};
-//   const url = new URL(testUrl);
-//   console.log(`Result ${url}`);
-
-//   const urlParams = new URLSearchParams(url.search);
-//   console.log('URL-params', urlParams);
-
-//   const params = Object.fromEntries(urlParams.entries());
-//   console.log('Params', params);
-
-//   // const resultParse = JSON.stringify(Object.assign(params));
-
-//   // console.log(`Result: ${resultParse}`);
-//   // return obj;
-// };
-
-// // parser(testUrl);
-
-// module.exports = parser;
-
-// const url = new URL(testUrl);
-
-// const urlBase = {
-//   protocol: url.protocol,
-//   hostname: url.hostname,
-//   pathname: url.pathname,
-// };
-
-// const UrlParams = new URLSearchParams(url.search);
-// const params = Object.fromEntries(UrlParams.entries());
-
-// const resultParse = JSON.stringify(Object.assign(urlBase, params));
-
-// console.log(resultParse);
