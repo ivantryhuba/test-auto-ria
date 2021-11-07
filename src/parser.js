@@ -1,3 +1,5 @@
+const chalk = require('chalk');
+
 const parser = testUrl => {
   const url = new URL(testUrl);
 
@@ -57,7 +59,10 @@ const parser = testUrl => {
     return (params[obj[0]] = { ...params[obj[0]], [obj[1]]: value });
   });
 
-  console.log('Params =', JSON.stringify(params, null, 2));
+  console.log(
+    chalk.bold.green('JSON_Params:'),
+    JSON.stringify(params, null, 2),
+  );
 
   return Object.keys(params)[0] ? params : null;
 };

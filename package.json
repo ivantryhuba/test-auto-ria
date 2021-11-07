@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/kpolischuk/test_task2#readme",
   "dependencies": {
+    "chalk": "^4.1.2",
     "jest": "^27.3.1"
   },
   "devDependencies": {
